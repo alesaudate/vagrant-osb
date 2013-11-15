@@ -233,6 +233,18 @@ class wls1036{
    require       => Wls::Wlsdomain['osbDomain'],
   }
 
+
+  wls::packdomain{'packWlsDomain12c':
+    wlHome          => $osWlHome,
+    mdwHome         => $osMdwHome,
+    fullJDKName     => $jdkWls12gJDK,  
+    user            => $user,
+    group           => $group,    
+    downloadDir     => $downloadDir, 
+    domain          => $wlsDomainName,
+    require         => Wls::Wlscontrol['startOSBSOAAdminServer'],
+  }
+
   # create keystores for automatic WLST login
   wls::storeuserconfig{
    'osbSoaDomain_keys':

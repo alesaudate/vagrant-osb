@@ -79,7 +79,7 @@ define wls::wlstexec ($version        = '1111',
                       ) {
 
    # if these params are empty always continue
-   if $wlsDomain == undef or $wlstype == undef or wlsObjectName == undef {
+   if $wlsDomain == undef or $wlstype == undef or $wlsObjectName == undef {
      $continue = true
    } else {
      # check if the object already exists on the weblogic domain
@@ -122,10 +122,11 @@ if ( $continue ) {
              }
         File {
                ensure  => present,
-               replace => 'yes',
+               replace => true,
                mode    => 0555,
                owner   => $user,
                group   => $group,
+               backup  => false,
              }
      }
      Solaris: {
@@ -141,10 +142,11 @@ if ( $continue ) {
              }
         File {
                ensure  => present,
-               replace => 'yes',
+               replace => true,
                mode    => 0775,
                owner   => $user,
                group   => $group,
+               backup  => false,
              }
 
      }
@@ -159,8 +161,9 @@ if ( $continue ) {
                logoutput => $logOutput,
              }
         File { ensure  => present,
-               replace => 'yes',
+               replace => true,
                mode    => 0777,
+               backup  => false,
              }
      }
    }

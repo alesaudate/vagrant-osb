@@ -42,14 +42,14 @@ define wls::bsupatch($mdwHome         = undef,
                      $patchFile       = undef,
                      $user            = 'oracle',
                      $group           = 'dba',
-                     $downloadDir     = '/install/',
+                     $downloadDir     = '/install',
                      $puppetDownloadMntPoint  = undef,
                     ) {
 
    case $operatingsystem {
      CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES: {
 
-        $execPath        = '/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/usr/java/${fullJDKName}/bin'
+        $execPath        = "/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/usr/java/${fullJDKName}/bin"
         $path            = $downloadDir
 
         Exec { path      => $execPath,
@@ -62,6 +62,7 @@ define wls::bsupatch($mdwHome         = undef,
                mode    => 0775,
                owner   => $user,
                group   => $group,
+               backup  => false,
              }
      }
      Solaris: {
@@ -79,6 +80,7 @@ define wls::bsupatch($mdwHome         = undef,
                mode    => 0775,
                owner   => $user,
                group   => $group,
+               backup  => false,
              }
      }
      windows: {
@@ -91,6 +93,7 @@ define wls::bsupatch($mdwHome         = undef,
              }
         File { ensure  => present,
                mode    => 0555,
+               backup  => false,
              }
      }
    }

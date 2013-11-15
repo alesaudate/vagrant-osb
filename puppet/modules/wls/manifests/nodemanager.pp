@@ -84,6 +84,7 @@ define wls::nodemanager($version         = "1111",
         File{
             owner   => $user,
             group   => $group,
+            backup  => false,
 #            mode    => 0775,
         }
      }
@@ -104,6 +105,7 @@ define wls::nodemanager($version         = "1111",
         File{
             owner   => $user,
             group   => $group,
+            backup  => false,
 #            mode    => 0775,
         }
      }
@@ -120,6 +122,7 @@ define wls::nodemanager($version         = "1111",
         File{
             owner   => $user,
             group   => $group,
+            backup  => false,
 #            mode    => 0775,
         }
      }
@@ -155,17 +158,21 @@ elsif $version == "1111" {
       # create all folders
       case $operatingsystem {
          CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: {
+            if ! defined(Exec["create ${logDir} directory"]) {
              exec { "create ${logDir} directory":
                      command => "mkdir -p ${logDir}",
                      unless  => "test -d ${logDir}",
                      user    => 'root',
              }
+           }
          }
          windows: {
       	   $logDirWin = slash_replace( $logDir )
-           exec { "create ${logDir} directory":
+           if ! defined(Exec["create ${logDir} directory"]) {
+             exec { "create ${logDir} directory":
                   command => "${checkCommand} mkdir ${logDirWin}",
                   unless  => "${checkCommand} dir ${logDirWin}",
+             }
            }
          }
          default: {
