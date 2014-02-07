@@ -25,6 +25,17 @@ def createBootPropertiesFile(directoryPath,fileName, username, password):
   fileNew.flush()
   fileNew.close()
 
+def createAdminStartupPropertiesFile(directoryPath, args):
+  adminserverDir = File(directoryPath)
+  bool = adminserverDir.mkdirs()
+  fileNew=open(directoryPath + '/startup.properties', 'w')
+  args=args.replace(':','\\:')
+  args=args.replace('=','\\=')
+  fileNew.write('Arguments=%s\n' % args)
+  fileNew.flush()
+  fileNew.close()
+
+
 
 print('Start normal domain... with template <%= @template %>')
 readTemplate('<%= @template %>')
@@ -44,9 +55,13 @@ set('FileMinSize',5000)
 set('RotationType','byTime')
 set('FileTimeSpan',24)
 
+print('Create machine LocalMachine with type <%= @nodeMgrMachine %>')
 cd('/')
-create('LocalMachine', '<%= @nodeMgrMachine %>')
-
+create('LocalMachine','<%= @nodeMgrMachine %>')
+cd('<%= @nodeMgrMachine %>/LocalMachine')
+create('LocalMachine','NodeManager')
+cd('NodeManager/LocalMachine')
+set('ListenAddress','<%= @adminListenAdr %>')
 
 cd('/Servers/AdminServer')
 # name of adminserver
@@ -56,7 +71,7 @@ cd('/Servers/'+ADMIN_SERVER)
 set('Machine','LocalMachine')
 
 # address and port
-#set('ListenAddress','<%= @adminListenAdr %>')
+set('ListenAddress','<%= @adminListenAdr %>')
 set('ListenPort',<%= @adminListenPort %>)
 
 create(ADMIN_SERVER,'ServerStart')
@@ -130,6 +145,7 @@ set('NodeManagerPasswordEncrypted',es )
 updateDomain()
 closeDomain()
 
+createAdminStartupPropertiesFile(DOMAIN_PATH+'/servers/'+ADMIN_SERVER+'/data/nodemanager',ADM_JAVA_ARGUMENTS)
 createBootPropertiesFile(DOMAIN_PATH+'/servers/'+ADMIN_SERVER+'/security','boot.properties',ADMIN_USER,ADMIN_PASSWORD)
 createBootPropertiesFile(DOMAIN_PATH+'/config/nodemanager','nm_password.properties',ADMIN_USER,ADMIN_PASSWORD)
 

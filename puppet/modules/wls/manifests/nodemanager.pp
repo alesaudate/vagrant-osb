@@ -41,6 +41,7 @@ define wls::nodemanager($version         = "1111",
                         $wlHome          = undef,
                         $fullJDKName     = undef,
                         $listenPort      = 5556,
+                        $listenAddress   = undef,
                         $user            = 'oracle',
                         $group           = 'dba',
                         $serviceName     = undef,
@@ -49,20 +50,20 @@ define wls::nodemanager($version         = "1111",
                         $domain          = undef,
                        ) {
 
+
    if $version == "1111" {
      $nodeMgrHome = "${wlHome}/common/nodemanager"
 
    } elsif $version == "1212" {
-     $nodeMgrHome = "${wlHome}/../user_projects/domains/${domain}/nodemanager"
+
+     if $::override_weblogic_domain_folder == undef {
+       $nodeMgrHome = "${wlHome}/../user_projects/domains/${domain}/nodemanager"
+     } else {
+       $nodeMgrHome = "${::override_weblogic_domain_folder}/domains/${domain}/nodemanager"
+     }
 
    } else {
      $nodeMgrHome = "${wlHome}/common/nodemanager"
-   }
-
-   if $logDir == undef {
-      $nodeLogDir = "${nodeMgrHome}/nodemanager.log"
-   } else {
-      $nodeLogDir = "${logDir}/nodemanager.log"
    }
 
    case $operatingsystem {
@@ -128,33 +129,10 @@ define wls::nodemanager($version         = "1111",
      }
    }
 
-# nodemanager is part of the domain creation
-if $version == "1212" {
-      case $operatingsystem {
-         CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: {
 
-             exec { "startNodemanager 1212 ${title}":
-               command => "nohup ${wlHome}/../user_projects/domains/${domain}/bin/startNodeManager.sh &",
-               unless  => "${checkCommand}",
-             }
-             exec { "sleep 20 sec for wlst exec ${title}":
-               command     => "/bin/sleep 20",
-               subscribe   => Exec ["startNodemanager 1212 ${title}"],
-               refreshonly => true,
-             }
-
-         }
-         windows: {
-		        service { "window nodemanager initial start ${title}":
-		                name       => "Oracle Weblogic ${domain} NodeManager (${serviceName})",
-		                enable     => true,
-		                ensure     => true,
-		        }
-         }
-      }
-}
-elsif $version == "1111" {
-   if $logDir != undef {
+   if $logDir == undef {
+      $nodeLogDir = "${nodeMgrHome}/nodemanager.log"
+   } else {
       # create all folders
       case $operatingsystem {
          CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: {
@@ -167,7 +145,7 @@ elsif $version == "1111" {
            }
          }
          windows: {
-      	   $logDirWin = slash_replace( $logDir )
+           $logDirWin = slash_replace( $logDir )
            if ! defined(Exec["create ${logDir} directory"]) {
              exec { "create ${logDir} directory":
                   command => "${checkCommand} mkdir ${logDirWin}",
@@ -180,7 +158,6 @@ elsif $version == "1111" {
          }
       }
 
-
       if ! defined(File["${logDir}"]) {
            file { "${logDir}" :
              ensure  => directory,
@@ -189,7 +166,44 @@ elsif $version == "1111" {
              require => Exec["create ${logDir} directory"],
            }
       }
+      $nodeLogDir = "${logDir}/nodemanager.log"
    }
+
+
+
+# nodemanager is part of the domain creation
+if $version == "1212" {
+      case $operatingsystem {
+         CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES, Solaris: {
+
+             if $::override_weblogic_domain_folder == undef {
+               $domainsHome = "${wlHome}/../user_projects/domains"
+             } else {
+               $domainsHome = "${::override_weblogic_domain_folder}/domains"
+             }
+
+
+             exec { "startNodemanager 1212 ${title}":
+               command => "nohup ${domainsHome}/${domain}/bin/startNodeManager.sh &",
+               unless  => "${checkCommand}",
+             }
+             exec { "sleep 20 sec for wlst exec ${title}":
+               command     => "/bin/sleep 20",
+               subscribe   => Exec ["startNodemanager 1212 ${title}"],
+               refreshonly => true,
+             }
+
+         }
+         windows: {
+            service { "window nodemanager initial start ${title}":
+                    name       => "Oracle Weblogic ${domain} NodeManager (${serviceName})",
+                    enable     => true,
+                    ensure     => true,
+            }
+         }
+      }
+}
+elsif $version == "1111" {
 
    $javaCommand  = "java -client -Xms32m -Xmx200m -XX:PermSize=128m -XX:MaxPermSize=256m -DListenPort=${listenPort} -Dbea.home=${wlHome} -Dweblogic.nodemanager.JavaHome=${JAVA_HOME} -Djava.security.policy=${wlHome}/server/lib/weblogic.policy -Xverify:none weblogic.NodeManager -v"
 
@@ -199,23 +213,24 @@ elsif $version == "1111" {
         file { "nodemanager.properties ux ${title}":
                 path    => "${nodeMgrHome}/nodemanager.properties",
                 ensure  => present,
-                replace => 'yes',
+                replace => true,
                 content => template("wls/nodemgr/nodemanager.properties.erb"),
         }
 
-        exec { "execwlst ux nodemanager ${title}":
+        exec { "exec ux nodemanager ${title}":
           command     => "/usr/bin/nohup ${javaCommand} &",
           environment => ["CLASSPATH=${wlHome}/server/lib/weblogic.jar",
                           "JAVA_HOME=${JAVA_HOME}",
                           "LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:${wlHome}/server/native/${nativeLib}"],
-          unless      => "${checkCommand}",
+          unless      => $checkCommand,
+          logoutput   => true,
           require     => File ["nodemanager.properties ux ${title}"],
         }
 
 
-        exec { "sleep 5 sec for wlst exec ${title}":
+        exec { "sleep 5 sec for exec ${title}":
           command     => "/bin/sleep 5",
-          subscribe   => Exec ["execwlst ux nodemanager ${title}"],
+          subscribe   => Exec ["exec ux nodemanager ${title}"],
           refreshonly => true,
         }
 
@@ -235,7 +250,7 @@ elsif $version == "1111" {
            logoutput  => false,
         }
 
-        exec { "execwlst win nodemanager ${title}":
+        exec { "exec win nodemanager ${title}":
           command     => "${wlHome}\\server\\bin\\installNodeMgrSvc.cmd",
           environment => ["CLASSPATH=${wlHome}\\server\\lib\\weblogic.jar",
                           "JAVA_HOME=${JAVA_HOME}"],
@@ -249,7 +264,7 @@ elsif $version == "1111" {
                 ensure  => present,
                 replace => 'yes',
                 content => template("wls/nodemgr/nodemanager.properties.erb"),
-                require => Exec ["execwlst win nodemanager ${title}"],
+                require => Exec ["exec win nodemanager ${title}"],
         }
 
         service { "window nodemanager initial start ${title}":

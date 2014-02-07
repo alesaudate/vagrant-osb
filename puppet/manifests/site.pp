@@ -39,7 +39,7 @@ class os2 {
       x64                  => true,
       downloadDir          => "/vagrant",
       urandomJavaFix       => true,
-      sourcePath           => "/vagrant"
+      sourcePath           => "/software"
   }
 
   class { 'limits':
@@ -90,7 +90,7 @@ class wls1036{
   $jdkWls11gJDK = 'jdk1.7.0_45'
   $wls11gVersion = "1036"
                       
-  $puppetDownloadMntPoint = "/vagrant"
+  $puppetDownloadMntPoint = "/software"
 
   $osOracleHome = "/opt/oracle"
   $osMdwHome    = "/opt/oracle/wls/Middleware11gR1"
@@ -136,6 +136,7 @@ class wls1036{
     user                   => $user,
     group                  => $group,    
     downloadDir            => $downloadDir,
+    remoteFile             => false,
     puppetDownloadMntPoint => $puppetDownloadMntPoint,
   }
 
@@ -147,6 +148,7 @@ class wls1036{
     user                   => $user,
     group                  => $group,    
     downloadDir            => $downloadDir,
+    remoteFile             => false,
     puppetDownloadMntPoint => $puppetDownloadMntPoint, 
   }
 
@@ -165,7 +167,8 @@ class wls1036{
     fullJDKName            => $jdkWls11gJDK,
     user                   => $user,
     group                  => $group,
-    downloadDir            => $downloadDir, 
+    downloadDir            => $downloadDir,
+    remoteFile             => false, 
     puppetDownloadMntPoint => $puppetDownloadMntPoint, 
   }
 
@@ -201,6 +204,7 @@ class wls1036{
     fullJDKName     => $jdkWls11gJDK, 
     wlsTemplate     => $osTemplate,
     domain          => $wlsDomainName,
+    developmentMode => false,
     adminServerName => "AdminServer",
     adminListenAdr  => "localhost",
     adminListenPort => $adminListenPort,

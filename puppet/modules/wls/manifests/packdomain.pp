@@ -12,7 +12,11 @@ define wls::packdomain (
   $downloadDir     = '/install',
 ) {
 
-  $domainPath = "${mdwHome}/user_projects/domains"
+  if $::override_weblogic_domain_folder == undef {
+    $domainPath = "${mdwHome}/user_projects/domains"
+  } else {
+    $domainPath = "${::override_weblogic_domain_folder}/domains"
+  }
 
   case $operatingsystem {
     CentOS, RedHat, OracleLinux, Ubuntu, Debian, SLES : {
@@ -35,6 +39,8 @@ define wls::packdomain (
         command   => "${wlHome}/common/bin/pack.sh ${packCommand}",
         creates   => "${downloadDir}/domain_${domain}.jar",
         logoutput => true,
+        user      => $user,
+        group     => $group,
       }
     }
     windows : {
@@ -42,6 +48,8 @@ define wls::packdomain (
         command   => "${checkCommand} ${wlHome}/common/bin/pack.cmd ${packCommand}",
         creates   => "${downloadDir}/domain_${domain}.jar",
         logoutput => true,
+        user      => $user,
+        group     => $group,
       }
     }
   }

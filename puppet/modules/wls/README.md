@@ -5,14 +5,39 @@ created by Edwin Biemond  email biemond at gmail dot com
 [biemond.blogspot.com](http://biemond.blogspot.com)    
 [Github homepage](https://github.com/biemond/puppet)  
 [Oracle OpenWorld presentation, how to roll out a complete FMW environment in less than 10 minutes](http://www.slideshare.net/biemond/fmw-puppet-oow13)  
-   
 
 Should work for Solaris x86 64, Windows, RedHat, CentOS, Ubuntu, Debian, Suse SLES or OracleLinux 
+
+New orawls module designed for puppet 3 and totally refactored and optimized for Hiera, see the biemond-orawls module  
+
+Reference implementation, the vagrant test case for full working WebLogic 10.3.6 cluster example  
+https://github.com/biemond/biemond-wls-vagrant-10.3.6  
+
+Reference implementation, the vagrant test case for full working WebLogic 12.1.2 cluster example  
+https://github.com/biemond/biemond-wls-vagrant-12.1.2  
+
+Reference implementation, the vagrant test case for full working WebLogic SOA Suite, OIM and OAM example  
+https://github.com/biemond/biemond-wls-vagrant-oim  
+
+Reference implementation, the vagrant test case for full working WebLogic SOA Suite, OSB example  
+https://github.com/biemond/biemond-wls-vagrant-soa-osb  
+
+Reference implementation, the vagrant test case for full working WebLogic WebCenter , Content and BPM example  
+https://github.com/biemond/biemond-wls-vagrant-wc  
+
 
 Version updates
 ---------------
 
-- 1.2.9 Optimizations, Weblogic install timeout to 0, WLST fixes and seperate domain pack ( no auto pack in wlsdomain )
+- 1.3.7 javaParameters param for installwls ( support for Docker -Dspace.detection=false ,thanks Jyrk )
+- 1.3.6 remoteFile param for BSU,Opatch,SOA Suite, WebCenter, WebCenter Content and OIM 
+- 1.3.5 Nodemanager fix, Added AdminServer startup properties for Nodemanager, Readme update for OIM,OAM
+- 1.3.4 Nodemanager listen address, Domain ALSBdebug param check, remoteFile param for installwls ( for vagrant), managed server listen address, logdir fixes in copydomain & nodemanager, packdomain permissions fix, option to use copydomain without sshpass
+- 1.3.3 Option to override the Oracle operating user and provide your own domains home
+- 1.3.2 better WebLogic Facts checking, Foreign Server and FS objects support
+- 1.3.1 soa & soa_bpm domain options, new JMS SubDeployment CF, Queue and Topic options
+- 1.3.0 Compatible with earlier linux versions
+- 1.2.9 Optimizations, Weblogic install timeout to 0, WLST fixes and separate domain pack ( no auto pack in wlsdomain )
 - 1.2.8 BSU / nodemanager / WLST scripts fixes. 
 - 1.2.7 Windows fixes. 
 - 1.2.6 Webtier installation and associate domain with the Oracle HTTP server. 
@@ -24,21 +49,53 @@ Version updates
 - 1.2.0 Multi node domain support with copydomain class, create Machine, Managed Server & Cluster, less notify output    
 - 1.1.1 updated license to Apache 2.0, new wlscontrol class to start or stop a wls server, minimal output in repeating runs, less notify output and a logOutput parameters to control the output    
 - 1.1.0 Low on entropy fix with new urandomfix class, add rngd or rng-tools service which adds urandom, removed java.security.egd parameter    
-- 1.0.10 createUser param in installwls,installadf(12.1.2) and installjdev when you want to create the OS user and group yourself  
-- 1.0.9 replaced sleep with waitforcompletion parameter  
-- 1.0.8 added Suse SLES as Operating System, 12.1.2 support for Coherence CLuster, see class wls12c_adf_domain, Added Server, Distributed Queue/Topics to Facts  
-- 1.0.7 12.1.2 Fully support for Dynamic Cluster and Elastic JMS, Scripts for creating server templates and dynamic clusters , see class wls12c_adf_domain  
-- 1.0.6 Added 12.1.2 Domain features to the 'adf' domain like coherence, jax-ws advanced + soap over jms  
-- 1.0.5 JDeveloper 12.1.2 with soa plugin install for Linux + small bug fixes
-- 1.0.4 Weblogic 12.1.2 adf domain creation with RCU ( plus EM,JRF, OWSM )  
-- 1.0.3 Weblogic 12.1.2 standard domain creation and start nodemanager of weblogic 12.1.2 domain 
-- 1.0.2 Weblogic 12.1.2 support plus ADF 11g / 12c install manifest, refactoring for weblogic 12.1.2  
-- 1.0.1 Webcenter, BPM and Webcenter Content domain creation, set Domain and Nodemanager passwords in the domain templates + Crossdomain 
-- 1.0.0 Webcenter and Webcenter Content installer support 
 
-Vagrant, Puppet and VirtualBox
-------------------------------
-Look at this great blog how to make your own WebLogic 12.1.2 server in just 10 minutes http://vbatik.wordpress.com/2013/10/11/weblogic-12-1-2-00-with-vagrant/ 
+
+WLS WebLogic Features
+---------------------------
+- installs WebLogic 10g,11g,12c ( 12.1.1 & 12.1.2 )
+- apply BSU patch ( WebLogic Patch )
+- installs Oracle ADF 11g & 12c ( 12.1.2)
+- installs Oracle Service Bus 11g OSB with or without OEPE ( Oracle Eclipse )
+- installs Oracle Soa Suite 11g
+- installs Oracle Webcenter 11g
+- installs Oracle Webcenter Content 11g
+- installs Oracle Webtier and associate domain
+- installs Oracle OIM ( identity management ) + OAM ( Access management ) 11.1.2.1
+- apply Oracle patch ( OPatch for Oracle products )
+- installs Oracle JDeveloper 11g / 12.1.2 + SOA Suite plugin
+- configures and starts nodemanager
+- start or stop a WebLogic server
+- pack a WebLogic domain
+- storeUserConfig for storing WebLogic Credentials and using in WLST
+- set the log folder of the WebLogic Domain, Managed servers and FMW   
+- add JCA resource adapter plan + Entries
+- create Machines, Managed Servers, Clusters, Server templates, Dynamic Clusters, Coherence clusters ( all 12.1.2 )
+- create File or JDBC Persistence Store
+- create JMS Server, Module, SubDeployment, Quota, Connection Factory, JMS (distributed) Queue or Topic,Foreign Servers + entries
+- create SAF agents, SAF Remote Destinations, SAF Imported Destinations, SAF objects
+- basically can run every WLST script with the flexible WLST define manifest
+
+Other options
+-------------
+- low on entropy fix ( urandom ) by RNGD or RNG-Tools service
+- Multi machine support for a WebLogic domain, can be used for cluster or spreading managed servers
+
+Domain creation options (Dev or Prod mode)
+------------------------------------------
+all templates creates a WebLogic domain, logs the domain creation output  
+
+- domain 'standard'    -> a default WebLogic    
+- domain 'adf'         -> JRF + EM + Coherence (12.1.2) + OWSM (12.1.2) + JAX-WS Advanced + Soap over JMS (12.1.2)   
+- domain 'osb'         -> OSB + JRF + EM + OWSM 
+- domain 'osb_soa'     -> OSB + SOA Suite + BAM + JRF + EM + OWSM 
+- domain 'osb_soa_bpm' -> OSB + SOA Suite + BAM + BPM + JRF + EM + OWSM 
+- domain 'soa'         -> SOA Suite + BAM + JRF + EM + OWSM 
+- domain 'soa_bpm'     -> SOA Suite + BAM + BPM + JRF + EM + OWSM 
+- domain 'wc_wcc_bpm'  -> WC (webcenter) + WCC ( Content ) + BPM + JRF + EM + OWSM 
+- domain 'wc'          -> WC (webcenter) + JRF + EM + OWSM 
+- domain 'oim'         -> OIM + OAM + SOA Suite 
+
 
 Linux low on entropy or urandom fix 
 -----------------------------------
@@ -63,6 +120,19 @@ For windows and JDK, you need copy the jdk to c:\oracle\ ( unpossible with the s
 For bsu patches facts you need to have the java bin folder in your path var of your system.  
 Also for registry support install this on the master, read this [registry blogpost](http://puppetlabs.com/blog/module-of-the-week-puppetlabs-registry-windows/) and install this forge module on the puppet master<br>
 puppet module install puppetlabs/registry
+
+Override the default Oracle operating system user
+-------------------------------------------------
+default this wls module uses oracle as weblogic install user ( need to create your own user and group and set createUser=false on installwls or installadf )  
+you can override this by setting the following fact 'override_weblogic_user', like override_weblogic_user=wls or set FACTER_override_weblogic_user=wls  
+/etc/facter/facts.d/ # Puppet Open Source  
+/etc/puppetlabs/facter/facts.d/ # Puppet Enterprise  
+
+Override the default Weblogic domains folder like user_projects 
+---------------------------------------------------------------
+set the following fact 'override_weblogic_domain_folder',  override_weblogic_domain_folder=/opt/oracle/wlsdomains or set FACTER_override_weblogic_domain_folder=/opt/oracle/wlsdomains  
+/etc/facter/facts.d/ # Puppet Open Source  
+/etc/puppetlabs/facter/facts.d/ # Puppet Enterprise  
 
 Oracle Big files and alternate download location
 ------------------------------------------------
@@ -101,48 +171,10 @@ Standard WebLogic 12.1.2 windows server with a domain ( no ADF or FMW )
 ------------------------------------------------------------------------
 see example_conf_6_server_wls12.1.2_windows_standard.txt located in your wls module home at the puppet master or look at the my github repos https://github.com/biemond/puppet/tree/master/modules/wls
 
+Standard WebLogic 10.3.6 server with a 11.1.2.1 OIM,OAM, SOA Suite domain 
+-------------------------------------------------------------------------
+see example_conf_7_oim_oam_11.1.2.1.txt located in your wls module home at the puppet master or look at the my github repos https://github.com/biemond/puppet/tree/master/modules/wls
 
-
-WLS WebLogic Features
----------------------------
-- installs WebLogic 10g,11g,12c ( 12.1.1 & 12.1.2 )
-- apply BSU patch ( WebLogic Patch )
-- installs Oracle ADF 11g & 12c ( 12.1.2)
-- installs Oracle Service Bus 11g OSB with or without OEPE ( Oracle Eclipse )
-- installs Oracle Soa Suite 11g
-- installs Oracle Webcenter 11g
-- installs Oracle Webcenter Content 11g
-- installs Oracle Webtier and associate domain
-- apply Oracle patch ( OPatch for Oracle products )
-- installs Oracle JDeveloper 11g / 12.1.2 + SOA Suite plugin
-- configures and starts nodemanager
-- start or stop a WebLogic server
-- pack a WebLogic domain
-- storeUserConfig for storing WebLogic Credentials and using in WLST
-- set the log folder of the WebLogic Domain, Managed servers and FMW   
-- add JCA resource adapter plan + Entries
-- create Machines, Managed Servers, Clusters, Server templates, Dynamic Clusters, Coherence clusters ( all 12.1.2 )
-- create File or JDBC Persistence Store
-- create JMS Server, Module, SubDeployment, Quota, Connection Factory, JMS (distributed) Queue or Topic,Foreign Servers + entries
-- create SAF agents, SAF Remote Destinations, SAF Imported Destinations, SAF objects
-- basically can run every WLST script with the flexible WLST define manifest
-
-Other options
--------------
-- low on entropy fix ( urandom ) by RNGD or RNG-Tools service
-- Multi machine support for a WebLogic domain, can be used for cluster or spreading managed servers
-
-Domain creation options (Dev or Prod mode)
-------------------------------------------
-all templates creates a WebLogic domain, logs the domain creation output  
-
-- domain 'standard'    -> a default WebLogic    
-- domain 'adf'         -> JRF + EM + Coherence (12.1.2) + OWSM (12.1.2) + JAX-WS Advanced + Soap over JMS (12.1.2)   
-- domain 'osb'         -> OSB + JRF + EM + OWSM 
-- domain 'osb_soa'     -> OSB + SOA Suite + BAM + JRF + EM + OWSM 
-- domain 'osb_soa_bpm' -> OSB + SOA Suite + BAM + BPM + JRF + EM + OWSM 
-- domain 'wc_wcc_bpm'  -> WC (webcenter) + WCC ( Content ) + BPM + JRF + EM + OWSM 
-- domain 'wc'          -> WC (webcenter) + JRF + EM + OWSM 
 
 ![Oracle WebLogic Console](https://raw.github.com/biemond/puppet/master/modules/wls/wlsconsole.png)
 
@@ -1315,7 +1347,7 @@ WebLogic configuration examples
 	       params        => ["javaArguments    = '-XX:PermSize=256m -XX:MaxPermSize=512m -Xms1024m -Xmx1024m -Dweblogic.Stdout=/data/logs/wlsServer1.out -Dweblogic.Stderr=/data/logs/wlsServer1_err.out'",
 	                         "wlsServerName    = 'wlsServer1'",
 	                         "machineName      = 'LocalMachine'",
-	                         "listenAddress    = 9201",
+	                         "listenPort       = 9201",
 	                         "nodeMgrLogDir    = '/data/logs'",
 	                        ],
 	      require        => Wls::Wlstexec['createRemoteMachine'],
@@ -1330,7 +1362,7 @@ WebLogic configuration examples
 	       params        => ["javaArguments    = '-XX:PermSize=256m -XX:MaxPermSize=512m -Xms1024m -Xmx1024m -Dweblogic.Stdout=/data/logs/wlsServer2.out -Dweblogic.Stderr=/data/logs/wlsServer2_err.out'",
 	                         "wlsServerName    = 'wlsServer2'",
 	                         "machineName      = 'RemoteMachine'",
-	                         "listenAddress    = 9202",
+	                         "listenPort       = 9202",
 	                         "nodeMgrLogDir    = '/data/logs'",
 	                        ],
 	      require        => Wls::Wlstexec['createManagerServerWlsServer1'],

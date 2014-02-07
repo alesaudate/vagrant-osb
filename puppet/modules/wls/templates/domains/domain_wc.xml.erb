@@ -32,6 +32,17 @@ def createBootPropertiesFile(directoryPath,fileName, username, password):
   fileNew.flush()
   fileNew.close()
 
+def createAdminStartupPropertiesFile(directoryPath, args):
+  adminserverDir = File(directoryPath)
+  bool = adminserverDir.mkdirs()
+  fileNew=open(directoryPath + '/startup.properties', 'w')
+  args=args.replace(':','\\:')
+  args=args.replace('=','\\=')
+  fileNew.write('Arguments=%s\n' % args)
+  fileNew.flush()
+  fileNew.close()
+
+
 
 
 
@@ -65,7 +76,7 @@ set('Name',ADMIN_SERVER )
 cd('/Servers/'+ADMIN_SERVER)
 
 # address and port
-#set('ListenAddress','<%= @adminListenAdr %>')
+set('ListenAddress','<%= @adminListenAdr %>')
 set('ListenPort',<%= @adminListenPort %>)
 
 
@@ -117,6 +128,7 @@ print('write domain...')
 writeDomain(DOMAIN_PATH)
 closeTemplate()
 
+createAdminStartupPropertiesFile(DOMAIN_PATH+'/servers/'+ADMIN_SERVER+'/data/nodemanager',ADM_JAVA_ARGUMENTS)
 createBootPropertiesFile(DOMAIN_PATH+'/servers/'+ADMIN_SERVER+'/security','boot.properties',ADMIN_USER,ADMIN_PASSWORD)
 createBootPropertiesFile(DOMAIN_PATH+'/config/nodemanager','nm_password.properties',ADMIN_USER,ADMIN_PASSWORD)
 
@@ -211,15 +223,23 @@ readDomain(DOMAIN_PATH)
 
 setOption( "AppDir", APP_PATH )
 
-cd('/Servers/AdminServer')
+print('change the default machine LocalMachine with type Machine')
+cd('/')
+cd('Machine/LocalMachine')
+create('LocalMachine','NodeManager')
+cd('NodeManager/LocalMachine')
+set('ListenAddress','<%= @adminListenAdr %>')
+
+print 'Change AdminServer'
+cd('/Servers/'+ADMIN_SERVER)
 set('Machine','LocalMachine')
 
 
 print 'Change wc_collaboration'
-setOption( "AppDir", APP_PATH )
 
 cd('/Servers/WC_Collaboration')
 set('Machine','LocalMachine')
+set('ListenAddress','<%= @adminListenAdr %>')
 
 create('WC_Collaboration','ServerStart')
 cd('ServerStart/WC_Collaboration')
@@ -248,6 +268,7 @@ setOption( "AppDir", APP_PATH )
 
 cd('/Servers/WC_Portlet')
 set('Machine','LocalMachine')
+set('ListenAddress','<%= @adminListenAdr %>')
 
 create('WC_Portlet','ServerStart')
 cd('ServerStart/WC_Portlet')
@@ -277,6 +298,7 @@ setOption( "AppDir", APP_PATH )
 
 cd('/Servers/WC_Spaces')
 set('Machine','LocalMachine')
+set('ListenAddress','<%= @adminListenAdr %>')
 
 create('WC_Spaces','ServerStart')
 cd('ServerStart/WC_Spaces')
